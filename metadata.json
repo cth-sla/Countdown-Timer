@@ -1,0 +1,6 @@
+{
+  "name": "Đồng hồ đếm ngược",
+  "description": "Ứng dụng đồng hồ đếm ngược thông minh với tính năng thông báo sắp hết giờ và khi hết giờ, hỗ trợ quản lý và tùy chỉnh chuông báo bằng âm thanh synthesizer sinh động.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
