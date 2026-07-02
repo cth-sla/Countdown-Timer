@@ -174,6 +174,7 @@ export default function CircularTimer({
           dominantBaseline="middle"
           className="font-sans font-bold text-slate-800 dark:text-slate-200 select-none"
           style={{ fontSize: isDisplayMode ? '1.15rem' : '0.85rem' }}
+          filter="url(#markerShadow)"
         >
           {i * 5}
         </text>
@@ -195,7 +196,14 @@ export default function CircularTimer({
     <div className="flex flex-col items-center gap-6" id="classic-analog-clock-container">
       
       {/* 1. Classic Analog Clock Dial Face */}
-      <div className="relative select-none" style={{ width: size, height: size }}>
+      <div 
+        className={`relative select-none transition-all duration-500 ease-out ${
+          isDisplayMode 
+            ? 'filter drop-shadow-[0_45px_75px_rgba(15,23,42,0.35)] dark:drop-shadow-[0_55px_95px_rgba(0,0,0,0.95)]' 
+            : 'filter drop-shadow-[0_30px_55px_rgba(15,23,42,0.3)] dark:drop-shadow-[0_40px_75px_rgba(0,0,0,0.85)]'
+        }`}
+        style={{ width: size, height: size }}
+      >
         
         {/* Pulsing ambient glow reflection */}
         <div
@@ -210,44 +218,76 @@ export default function CircularTimer({
         <svg width={size} height={size} className="overflow-visible">
           <defs>
             {/* Soft inner dial shadow for realistic watch plate depth */}
-            <radialGradient id="dialGrad" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
-              <stop offset="100%" stopColor="rgba(0,0,0,0.08)" />
+            <radialGradient id="dialGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="85%" stopColor="rgba(0,0,0,0)" />
+              <stop offset="97%" stopColor="rgba(0,0,0,0.12)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.35)" />
             </radialGradient>
 
             {/* Premium glass reflect gradient */}
             <linearGradient id="glassReflection" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.15" />
-              <stop offset="35%" stopColor="white" stopOpacity="0.06" />
+              <stop offset="0%" stopColor="white" stopOpacity="0.18" />
+              <stop offset="35%" stopColor="white" stopOpacity="0.08" />
               <stop offset="35.5%" stopColor="white" stopOpacity="0" />
               <stop offset="100%" stopColor="white" stopOpacity="0" />
             </linearGradient>
 
-            {/* Bronze/Gold metallic bezel bezel ring */}
+            {/* Bronze/Gold metallic bezel bezel ring with 3D reflections */}
             <linearGradient id="metallicBezel" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#d97706" /> {/* Amber/gold */}
-              <stop offset="50%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#78350f" /> {/* Warm bronze */}
+              <stop offset="0%" stopColor="#78350f" /> {/* Deep dark bronze */}
+              <stop offset="15%" stopColor="#b45309" />
+              <stop offset="35%" stopColor="#f59e0b" />
+              <stop offset="50%" stopColor="#fffbeb" /> {/* High gloss reflection */}
+              <stop offset="65%" stopColor="#f59e0b" />
+              <stop offset="85%" stopColor="#d97706" />
+              <stop offset="100%" stopColor="#451a03" />
             </linearGradient>
+
+            {/* Bright inner chamfer highlight */}
+            <linearGradient id="innerBezelHighlight" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#f59e0b" />
+              <stop offset="50%" stopColor="#fffbeb" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#d97706" />
+            </linearGradient>
+
+            {/* Realistic hand drop shadow */}
+            <filter id="handShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="1.5" dy="2.5" stdDeviation="1.8" floodColor="#0f172a" floodOpacity="0.3" />
+            </filter>
+            
+            {/* Soft shadow for numerals and dial marks */}
+            <filter id="markerShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0.5" dy="1" stdDeviation="0.5" floodColor="#0f172a" floodOpacity="0.15" />
+            </filter>
           </defs>
 
-          {/* Outer Bezel Shadow */}
+          {/* 3D Chamfered Outer Edge Bezel Shadow */}
           <circle
             cx={size / 2}
             cy={size / 2}
-            r={radius + 4}
-            className="fill-transparent stroke-slate-200/50 dark:stroke-slate-950/80"
-            strokeWidth={isDisplayMode ? 10 : 8}
+            r={radius + (isDisplayMode ? 14 : 10)}
+            className="fill-transparent stroke-slate-400/20 dark:stroke-black/60"
+            strokeWidth={4}
           />
 
-          {/* Metallic Gold/Bronze Bezel Ring */}
+          {/* Core 3D Gold/Bronze Bezel Ring (Thick and physical) */}
           <circle
             cx={size / 2}
             cy={size / 2}
-            r={radius + 1}
+            r={radius + (isDisplayMode ? 8 : 6)}
             fill="transparent"
             stroke="url(#metallicBezel)"
-            strokeWidth={isDisplayMode ? 5 : 4}
+            strokeWidth={isDisplayMode ? 16 : 12}
+          />
+
+          {/* Polished Inner Chamfer Highlight */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="transparent"
+            stroke="url(#innerBezelHighlight)"
+            strokeWidth={1.5}
           />
 
           {/* Clock Dial Main Plate */}
@@ -334,8 +374,8 @@ export default function CircularTimer({
 
           {/* ================= CLOCK HANDS ================= */}
 
-          {/* 1. Hour Hand (Vintage Cathedral/Spade style) */}
-          <g transform={`rotate(${hourAngle} ${size / 2} ${size / 2})`}>
+          {/* 1. Hour Hand (Vintage Cathedral/Spade style with realistic drop shadow) */}
+          <g transform={`rotate(${hourAngle} ${size / 2} ${size / 2})`} filter="url(#handShadow)">
             <line
               x1={size / 2}
               y1={size / 2 + 12}
@@ -354,8 +394,8 @@ export default function CircularTimer({
             />
           </g>
 
-          {/* 2. Minute Hand (Sleek elongated diamond hand) */}
-          <g transform={`rotate(${minuteAngle} ${size / 2} ${size / 2})`}>
+          {/* 2. Minute Hand (Sleek elongated diamond hand with realistic drop shadow) */}
+          <g transform={`rotate(${minuteAngle} ${size / 2} ${size / 2})`} filter="url(#handShadow)">
             <line
               x1={size / 2}
               y1={size / 2 + 18}
@@ -373,8 +413,8 @@ export default function CircularTimer({
             />
           </g>
 
-          {/* 3. Second Hand (Delicate sweeping needle in bright crimson red) */}
-          <g transform={`rotate(${secondAngle} ${size / 2} ${size / 2})`}>
+          {/* 3. Second Hand (Delicate sweeping needle in bright crimson red with drop shadow) */}
+          <g transform={`rotate(${secondAngle} ${size / 2} ${size / 2})`} filter="url(#handShadow)">
             <line
               x1={size / 2}
               y1={size / 2 + 25}
@@ -402,12 +442,13 @@ export default function CircularTimer({
             className="pointer-events-none"
           />
 
-          {/* 5. Center Hub Pin (Metallic pivot caps) */}
+          {/* 5. Center Hub Pin (Metallic pivot caps with shadow) */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={isDisplayMode ? 7.5 : 5.5}
             className="fill-slate-900 dark:fill-slate-100 shadow-md"
+            filter="url(#handShadow)"
           />
           <circle
             cx={size / 2}
