@@ -504,7 +504,7 @@ export default function App() {
   const handlePlayPause = (isLocalOrEvent: any = true) => {
     const isLocal = isLocalOrEvent === false ? false : true;
     const currentConfig = configRef.current;
-    if (status === 'idle') {
+    if (status === 'idle' || status === 'completed') {
       const duration = hoursInput * 3600 + minutesInput * 60 + secondsInput;
       if (duration === 0) return;
 
@@ -609,28 +609,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-teal-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/10 text-slate-800 dark:text-slate-100 transition-colors duration-300">
       
-      {/* Background Visual Alert Pulses */}
-      <AnimatePresence>
-        {isRinging && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.2, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-            className="fixed inset-0 bg-red-600 pointer-events-none z-50 mix-blend-overlay"
-          />
-        )}
-        {status === 'warning' && !isRinging && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.08, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ repeat: Infinity, duration: 2.0, ease: 'easeInOut' }}
-            className="fixed inset-0 bg-amber-500 pointer-events-none z-50 mix-blend-overlay"
-          />
-        )}
-      </AnimatePresence>
-
       {/* Main Container */}
       {viewMode === 'display' ? (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 relative select-none">
@@ -797,7 +775,7 @@ export default function App() {
               {/* Tách riêng nút bấm điều khiển (Play / Pause / Reset) */}
               <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-md flex flex-col gap-4 transition-all duration-300" id="separated-controls-container">
                 
-                {status === 'idle' && (
+                {(status === 'idle' || status === 'completed') && (
                   /* MANUAL TIME CONFIGURATION INPUTS */
                   <div className="flex flex-col items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800/50" id="manual-inputs-container">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-1">
@@ -867,8 +845,8 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="flex justify-center items-center gap-4 w-full">
-                  {isRinging ? (
+                <div className="flex flex-col gap-3 w-full animate-fadeIn" id="timer-actions-wrapper">
+                  {isRinging && (
                     <button
                       id="btn-stop-ringing"
                       onClick={muteAlarm}
@@ -877,52 +855,57 @@ export default function App() {
                       <VolumeX className="w-5 h-5 animate-pulse" />
                       <span>Tắt Chuông Báo Ngay</span>
                     </button>
-                  ) : (
-                    <>
-                      <button
-                        id="btn-play-pause"
-                        disabled={status === 'idle' && hoursInput === 0 && minutesInput === 0 && secondsInput === 0}
-                        onClick={handlePlayPause}
-                        className={`
-                          flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-white text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-md
-                          ${status === 'running' || status === 'warning'
-                            ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/25'
-                            : 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:opacity-95 shadow-teal-500/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100'
-                          }
-                        `}
-                        title={status === 'running' || status === 'warning' ? 'Tạm Dừng' : 'Bắt Đầu'}
-                      >
-                        {status === 'running' || status === 'warning' ? (
-                          <>
-                            <Pause className="w-5 h-5 fill-current" />
-                            <span>TẠM DỪNG ĐỒNG HỒ</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-5 h-5 fill-current ml-0.5" />
-                            <span>BẮT ĐẦU ĐẾM NGƯỢC</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        id="btn-reset-timer"
-                        onClick={handleStopReset}
-                        disabled={status === 'idle'}
-                        className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 cursor-pointer border border-slate-200/40 dark:border-slate-800"
-                        title={status === 'paused' ? 'Hủy Bỏ / Đặt Lại' : 'Đặt Lại'}
-                      >
-                        <RotateCcw className="w-5 h-5" />
-                      </button>
-                    </>
                   )}
+
+                  <div className="flex justify-center items-center gap-4 w-full">
+                    <button
+                      id="btn-play-pause"
+                      disabled={
+                        (status === 'idle' || status === 'completed') &&
+                        hoursInput === 0 &&
+                        minutesInput === 0 &&
+                        secondsInput === 0
+                      }
+                      onClick={handlePlayPause}
+                      className={`
+                        flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-white text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-md
+                        ${status === 'running' || status === 'warning'
+                          ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/25'
+                          : 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:opacity-95 shadow-teal-500/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100'
+                        }
+                      `}
+                      title={status === 'running' || status === 'warning' ? 'Tạm Dừng' : 'Bắt Đầu'}
+                    >
+                      {status === 'running' || status === 'warning' ? (
+                        <>
+                          <Pause className="w-5 h-5 fill-current" />
+                          <span>TẠM DỪNG ĐỒNG HỒ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-5 h-5 fill-current ml-0.5" />
+                          <span>BẮT ĐẦU ĐẾM NGƯỢC</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      id="btn-reset-timer"
+                      onClick={handleStopReset}
+                      disabled={status === 'idle'}
+                      className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 cursor-pointer border border-slate-200/40 dark:border-slate-800"
+                      title={status === 'paused' ? 'Hủy Bỏ / Đặt Lại' : 'Đặt Lại'}
+                    >
+                      <RotateCcw className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <PresetButtons
                 onSelectPreset={handleSelectPreset}
                 activeSeconds={totalSeconds}
-                disabled={status !== 'idle'}
+                disabled={status !== 'idle' && status !== 'completed'}
               />
 
             </main>
@@ -939,7 +922,7 @@ export default function App() {
 
           {/* Informative footer */}
           <footer className="mt-12 pt-5 border-t border-slate-200/40 dark:border-slate-800/40 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 Đồng Hồ Đếm Ngược Chuông Báo. Được thiết kế tối ưu hóa Web Audio API.</p>
+            <p>© 2026 Đồng Hồ Đếm Ngược</p>
             <div className="flex items-center gap-2 text-[11px] text-teal-600 dark:text-teal-400 font-semibold uppercase tracking-wider bg-teal-500/5 dark:bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/10">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Âm Thanh Synthesizer Kỹ Thuật Số</span>
