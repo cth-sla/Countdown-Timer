@@ -31,6 +31,11 @@ export const SOUND_PRESETS = [
     description: 'Tiếng chuông gõ ấm áp, sâu lắng với dải âm ngân lâu.',
   },
   {
+    id: 'airport-chime',
+    name: 'Âm Thanh Sân Bay',
+    description: 'Âm báo phát thanh sân bay cổ điển, thanh lịch và trang trọng.',
+  },
+  {
     id: 'ticking-tension',
     name: 'Tiếng Tích Tắc Hồi Hộp',
     description: 'Âm thanh gõ gỗ đanh gọn giống kim giây gõ dồn dập.',
@@ -166,6 +171,39 @@ export function playSound(soundId: string, volume: number, loop: boolean = false
         activeSources.push(osc, subOsc);
         break;
       }
+      case 'airport-chime': {
+        // Classic 4-note airport announcer chime (F4 - A4 - C5 - F5) with resonant overtones
+        const notes = [349.23, 440.00, 523.25, 698.46];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            if (isStopped) return;
+            const osc = ctx.createOscillator();
+            const overtone = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            
+            overtone.type = 'sine';
+            overtone.frequency.setValueAtTime(freq * 2, ctx.currentTime);
+            
+            gain.gain.setValueAtTime(0.5, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.6);
+            
+            osc.connect(gain);
+            overtone.connect(gain);
+            gain.connect(mainGain);
+            
+            osc.start();
+            overtone.start();
+            osc.stop(ctx.currentTime + 1.6);
+            overtone.stop(ctx.currentTime + 1.6);
+            
+            activeSources.push(osc, overtone);
+          }, idx * 280);
+        });
+        break;
+      }
       case 'ticking-tension': {
         // sharp tension tick
         const osc = ctx.createOscillator();
@@ -198,6 +236,8 @@ export function playSound(soundId: string, volume: number, loop: boolean = false
       intervalTime = 2500;
     } else if (soundId === 'marimba-chime') {
       intervalTime = 1800;
+    } else if (soundId === 'airport-chime') {
+      intervalTime = 3000;
     }
     intervalId = setInterval(() => {
       triggerSound();
