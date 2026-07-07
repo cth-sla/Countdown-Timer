@@ -16,11 +16,6 @@ function getAudioContext(): AudioContext {
 
 export const SOUND_PRESETS = [
   {
-    id: 'digital-siren',
-    name: 'Còi Báo Kỹ Thuật Số',
-    description: 'Âm thanh cảnh báo điện tử dồn dập, tần số kép cuốn hút.',
-  },
-  {
     id: 'marimba-chime',
     name: 'Gõ Nhạc Gỗ Marimba',
     description: 'Giai điệu mộc mạc, thư thái, thích hợp chuẩn bị hết giờ.',
@@ -42,12 +37,113 @@ export const SOUND_PRESETS = [
   },
 ];
 
+export const EXPANDED_LIBRARY_SOUNDS = [
+  {
+    id: 'online-bell',
+    name: 'Chuông Đồng Vang Vọng (Online)',
+    description: 'Âm thanh tiếng gõ chuông đồng phong cách thiền tĩnh lặng.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav',
+  },
+  {
+    id: 'online-buzzer',
+    name: 'Còi Báo Điện Tử Retro (Online)',
+    description: 'Tiếng còi bíp bíp liên hồi mang âm hưởng cổ điển, dứt khoát.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav',
+  },
+  {
+    id: 'online-chime',
+    name: 'Gõ Đệm Nhẹ Nhàng (Online)',
+    description: 'Nhịp gõ sáo hoặc kim loại nhỏ thanh tao thích hợp báo hiệu sớm.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/911/911-84.wav',
+  },
+  {
+    id: 'online-siren',
+    name: 'Còi Hú Cảnh Báo (Online)',
+    description: 'Còi cảnh báo dồn dập, tần số cao kích thích phản xạ tập trung.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/1004/1004-84.wav',
+  },
+  {
+    id: 'online-flute',
+    name: 'Sáo Trúc Êm Ái (Online)',
+    description: 'Giai điệu sáo trúc du dương, thư thái phù hợp nhắc nhở nhẹ.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/1659/1659-84.wav',
+  },
+  {
+    id: 'online-guitar',
+    name: 'Gảy Đàn Guitar (Online)',
+    description: 'Tiếng gảy dây đàn mộc ấm áp, trong trẻo.',
+    url: 'https://assets.mixkit.co/active_storage/sfx/1545/1545-84.wav',
+  },
+];
+
+const customSoundUrls = new Map<string, string>();
+
+export function registerCustomSound(id: string, url: string) {
+  customSoundUrls.set(id, url);
+}
+
+export function unregisterCustomSound(id: string) {
+  const url = customSoundUrls.get(id);
+  if (url && url.startsWith('blob:')) {
+    try {
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      // Ignore
+    }
+  }
+  customSoundUrls.delete(id);
+}
+
 interface AudioHandle {
   stop: () => void;
 }
 
-// Synthesize sound effects using pure Web Audio API
+// Play sound effects using pure Web Audio API synthesis or external/custom audio files
 export function playSound(soundId: string, volume: number, loop: boolean = false): AudioHandle {
+  // 1. Check if the soundId corresponds to an external/custom URL
+  let resolvedUrl = '';
+  if (customSoundUrls.has(soundId)) {
+    resolvedUrl = customSoundUrls.get(soundId)!;
+  } else {
+    const onlinePreset = EXPANDED_LIBRARY_SOUNDS.find(s => s.id === soundId);
+    if (onlinePreset) {
+      resolvedUrl = onlinePreset.url;
+    } else if (
+      soundId.startsWith('http://') ||
+      soundId.startsWith('https://') ||
+      soundId.startsWith('blob:') ||
+      soundId.startsWith('data:')
+    ) {
+      resolvedUrl = soundId;
+    }
+  }
+
+  // 2. Play using standard Audio element if resolved as a URL (highly robust and avoids CORS issues for audio playback)
+  if (resolvedUrl) {
+    const audio = new Audio(resolvedUrl);
+    audio.volume = volume;
+    audio.loop = loop;
+    
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.warn('Audio play prevented or failed:', error);
+      });
+    }
+
+    return {
+      stop: () => {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (e) {
+          // Ignore
+        }
+      }
+    };
+  }
+
+  // Fallback to Web Audio API synthesis
   const ctx = getAudioContext();
   const mainGain = ctx.createGain();
   mainGain.gain.setValueAtTime(volume, ctx.currentTime);
@@ -103,12 +199,6 @@ export function playSound(soundId: string, volume: number, loop: boolean = false
 
   const triggerSound = () => {
     switch (soundId) {
-      case 'digital-siren': {
-        // High-low pulse siren
-        playBeep(987.77, 0.2, 'square'); // B5
-        setTimeout(() => playBeep(783.99, 0.2, 'square'), 250); // G5
-        break;
-      }
       case 'marimba-chime': {
         // Warm rich marimba chord arpeggio
         const now = ctx.currentTime;

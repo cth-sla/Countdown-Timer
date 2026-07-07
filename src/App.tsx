@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Clock, Volume2, ShieldAlert, Award, AlertCircle, Sparkles, VolumeX, Moon, Sun, Tv, ExternalLink, ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react';
 import { AlarmConfig, TimerStatus } from './types';
-import { playSound } from './utils/audio';
+import { playSound, registerCustomSound, unregisterCustomSound } from './utils/audio';
+import { getCustomSounds, saveCustomSound, deleteCustomSound } from './utils/db';
 import CircularTimer from './components/CircularTimer';
 import PresetButtons from './components/PresetButtons';
 import AlarmSettings from './components/AlarmSettings';
@@ -78,6 +79,84 @@ export default function App() {
   // Guard rails to prevent duplicate alerts within same trigger seconds
   const hasTriggeredWarningRef = useRef<boolean>(false);
   const autoStopEndTimeoutRef = useRef<any>(null);
+
+  // Custom sounds state loaded from IndexedDB
+  const [customSounds, setCustomSounds] = useState<Array<{ id: string; name: string; url: string }>>([]);
+
+  useEffect(() => {
+    let activeUrls: string[] = [];
+    
+    const loadCustomSounds = async () => {
+      try {
+        const records = await getCustomSounds();
+        const loaded = records.map((record) => {
+          const url = URL.createObjectURL(record.data);
+          activeUrls.push(url);
+          registerCustomSound(record.id, url);
+          return {
+            id: record.id,
+            name: record.name,
+            url: url,
+          };
+        });
+        setCustomSounds(loaded);
+      } catch (err) {
+        console.error('Failed to load custom sounds:', err);
+      }
+    };
+
+    loadCustomSounds();
+
+    return () => {
+      // Clean up object URLs on unmount or reload
+      activeUrls.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          // Ignore
+        }
+      });
+    };
+  }, []);
+
+  const handleAddCustomSound = async (name: string, blob: Blob) => {
+    const id = 'custom-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
+    try {
+      await saveCustomSound(id, name, blob);
+      const url = URL.createObjectURL(blob);
+      registerCustomSound(id, url);
+      setCustomSounds((prev) => [...prev, { id, name, url }]);
+      return id;
+    } catch (err) {
+      console.error('Failed to add custom sound:', err);
+      throw err;
+    }
+  };
+
+  const handleDeleteCustomSound = async (id: string) => {
+    try {
+      await deleteCustomSound(id);
+      unregisterCustomSound(id);
+      setCustomSounds((prev) => prev.filter((sound) => sound.id !== id));
+      
+      // If the deleted sound was selected, reset to standard defaults
+      let updatedConfig = { ...config };
+      let changed = false;
+      if (config.warningSound === id) {
+        updatedConfig.warningSound = 'ticking-tension';
+        changed = true;
+      }
+      if (config.endSound === id) {
+        updatedConfig.endSound = 'soothing-bell';
+        changed = true;
+      }
+      if (changed) {
+        handleConfigChange(updatedConfig);
+      }
+    } catch (err) {
+      console.error('Failed to delete custom sound:', err);
+    }
+  };
 
   // Maintain reference to configuration for intervals to avoid stale closures
   const configRef = useRef<AlarmConfig>(config);
@@ -915,6 +994,9 @@ export default function App() {
               <AlarmSettings
                 config={config}
                 onChangeConfig={handleConfigChange}
+                customSounds={customSounds}
+                onAddCustomSound={handleAddCustomSound}
+                onDeleteCustomSound={handleDeleteCustomSound}
               />
             </aside>
 
