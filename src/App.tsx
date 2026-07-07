@@ -1046,10 +1046,10 @@ export default function App() {
 
           {/* Informative footer */}
           <footer className="mt-12 pt-5 border-t border-slate-200/40 dark:border-slate-800/40 text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 Đồng Hồ Đếm Ngược</p>
+            <p>© 2026 Trần Trà - Viettel Sơn La</p>
             <div className="flex items-center gap-2 text-[11px] text-teal-600 dark:text-teal-400 font-semibold uppercase tracking-wider bg-teal-500/5 dark:bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/10">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Âm Thanh Synthesizer Kỹ Thuật Số</span>
+              <span>Âm Thanh Kỹ Thuật Số</span>
             </div>
           </footer>
 
