@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { VolumeX, AlertOctagon } from 'lucide-react';
+import { AlertOctagon } from 'lucide-react';
 import { TimerStatus } from '../types';
 
 interface CircularTimerProps {
@@ -515,23 +515,7 @@ export default function CircularTimer({
               <span>Tổng: {totalSeconds}s</span>
             </div>
           </div>
-        ) : (
-          isRinging && (
-            <div className="flex flex-col items-center text-center justify-center">
-              <motion.button
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                onClick={onMuteAlarm}
-                className="mt-3 flex items-center gap-2 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-rose-500/30 transition-all cursor-pointer z-50"
-                id="btn-display-mute"
-              >
-                <VolumeX className="w-4 h-4 animate-pulse" />
-                <span>Tắt Chuông Báo</span>
-              </motion.button>
-            </div>
-          )
-        )}
+        ) : null}
 
       </div>
 
