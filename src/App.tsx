@@ -725,7 +725,7 @@ export default function App() {
       {viewMode === 'display' ? (
         <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 relative select-none">
           {/* Subtle Hover Controller bar */}
-          <div className="absolute top-4 right-4 flex items-center gap-2.5 opacity-10 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-md">
+          <div className="absolute top-4 right-4 flex flex-col items-center gap-2 opacity-10 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-md">
             <button
               onClick={() => {
                 const params = new URLSearchParams(window.location.search);
@@ -736,25 +736,24 @@ export default function App() {
                   setViewMode('manage');
                 }
               }}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-teal-500 dark:hover:text-teal-400 cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>
-                {typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('view') === 'display' || new URLSearchParams(window.location.search).get('view') === 'dashboard')
+              className="p-1.5 rounded-lg text-slate-500 hover:text-teal-500 dark:text-slate-400 dark:hover:text-teal-400 cursor-pointer flex items-center justify-center"
+              title={
+                typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('view') === 'display' || new URLSearchParams(window.location.search).get('view') === 'dashboard')
                   ? 'Mở Bảng Quản Lý'
                   : 'Bảng Điều Khiển'
-                }
-              </span>
+              }
+            >
+              <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+            <div className="w-4 h-px bg-slate-200 dark:bg-slate-800" />
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer flex items-center justify-center"
               title="Đổi chủ đề"
             >
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+            <div className="w-4 h-px bg-slate-200 dark:bg-slate-800" />
             <button
               onClick={toggleFullScreen}
               className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer flex items-center justify-center"
