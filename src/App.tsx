@@ -610,6 +610,15 @@ export default function App() {
           status: 'running',
         });
       }
+
+      // Automatically open dashboard in a new tab when starting countdown
+      if (viewMode === 'manage') {
+        try {
+          window.open(window.location.origin + '?view=dashboard', '_blank');
+        } catch (e) {
+          console.error('Failed to open dashboard tab:', e);
+        }
+      }
     } else if (status === 'running' || status === 'warning') {
       // Pause
       clearInterval(timerIntervalRef.current);
