@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Clock, Volume2, ShieldAlert, Award, AlertCircle, Sparkles, VolumeX, Moon, Sun, Tv, ExternalLink, ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react';
+import { Clock, Volume2, ShieldAlert, Award, AlertCircle, Sparkles, VolumeX, Moon, Sun, Tv, ExternalLink, ArrowLeft, Play, Pause, RotateCcw, Maximize, Minimize } from 'lucide-react';
 import { AlarmConfig, TimerStatus } from './types';
 import { playSound, registerCustomSound, unregisterCustomSound } from './utils/audio';
 import { getCustomSounds, saveCustomSound, deleteCustomSound } from './utils/db';
@@ -36,6 +36,7 @@ export default function App() {
   // Presentation view vs. management console view mode state
   const [viewMode, setViewMode] = useState<'display' | 'manage'>('manage');
   const [showDisplayOptions, setShowDisplayOptions] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // Theme support
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -463,6 +464,29 @@ export default function App() {
     localStorage.setItem('theme_dark', String(darkMode));
   }, [darkMode]);
 
+  // Listen to fullscreen changes to keep state in sync
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error('Error attempting to enable fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.error('Error attempting to exit fullscreen:', err);
+      });
+    }
+  };
+
   // Clean up all running audio and timers on unmount
   useEffect(() => {
     return () => {
@@ -729,6 +753,15 @@ export default function App() {
               title="Đổi chủ đề"
             >
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+            <button
+              onClick={toggleFullScreen}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer flex items-center justify-center"
+              title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+              id="btn-fullscreen-toggle"
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             </button>
           </div>
 
