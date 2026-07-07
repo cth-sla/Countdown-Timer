@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Play, Square, Trash2, Plus, Music, Upload, Check, Globe } from 'lucide-react';
-import { SOUND_PRESETS, EXPANDED_LIBRARY_SOUNDS, playSound } from '../utils/audio';
+import { Play, Square, Trash2, Plus, Music, Upload, Check } from 'lucide-react';
+import { SOUND_PRESETS, playSound } from '../utils/audio';
 
 interface SoundSelectorProps {
   selectedId: string;
@@ -12,7 +12,7 @@ interface SoundSelectorProps {
   onDeleteCustomSound: (id: string) => Promise<void>;
 }
 
-type TabType = 'synth' | 'online' | 'custom';
+type TabType = 'synth' | 'custom';
 
 export default function SoundSelector({
   selectedId,
@@ -25,7 +25,6 @@ export default function SoundSelector({
 }: SoundSelectorProps) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (customSounds.some(s => s.id === selectedId)) return 'custom';
-    if (EXPANDED_LIBRARY_SOUNDS.some(s => s.id === selectedId)) return 'online';
     return 'synth';
   });
 
@@ -129,18 +128,6 @@ export default function SoundSelector({
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('online')}
-          className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
-            activeTab === 'online'
-              ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-          }`}
-        >
-          <Globe className="w-3 h-3" />
-          <span>Thư viện (Online)</span>
-        </button>
-        <button
-          type="button"
           onClick={() => setActiveTab('custom')}
           className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
             activeTab === 'custom'
@@ -203,54 +190,7 @@ export default function SoundSelector({
           </div>
         )}
 
-        {/* TAB 2: ONLINE EXPANDED LIBRARY */}
-        {activeTab === 'online' && (
-          <div className="flex flex-col gap-1.5">
-            {EXPANDED_LIBRARY_SOUNDS.map((sound) => {
-              const isSelected = selectedId === sound.id;
-              return (
-                <div
-                  key={sound.id}
-                  onClick={() => onSelect(sound.id)}
-                  className={`flex items-center justify-between p-2 rounded-xl cursor-pointer border transition-all duration-150 ${
-                    isSelected
-                      ? type === 'end'
-                        ? 'border-rose-500 bg-rose-500/5 dark:bg-rose-500/10'
-                        : 'border-amber-400 bg-amber-500/5 dark:bg-amber-500/10'
-                      : 'border-slate-100 hover:border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800/80 dark:hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex flex-col gap-0.5 max-w-[80%] pl-1">
-                    <div className="flex items-center gap-1.5">
-                      {isSelected && (
-                        <div className={`w-1.5 h-1.5 rounded-full ${type === 'end' ? 'bg-rose-500' : 'bg-amber-500'}`} />
-                      )}
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{sound.name}</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{sound.description}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePreview(sound.id);
-                    }}
-                    className={`p-1.5 rounded-lg transition-all ${
-                      playingPreview === sound.id
-                        ? 'bg-red-500 text-white animate-pulse'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {playingPreview === sound.id ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* TAB 3: CUSTOM UPLOADED SOUNDS */}
+        {/* TAB 2: CUSTOM UPLOADED SOUNDS */}
         {activeTab === 'custom' && (
           <div className="flex flex-col gap-1.5">
             {/* Upload Area */}
