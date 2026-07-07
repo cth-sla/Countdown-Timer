@@ -795,7 +795,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5">
-                  <span>Đồng Hồ Đếm Ngược Chuông Báo</span>
+                  <span>Đồng hồ đếm ngược có Chuông báo</span>
                 </h1>
                 <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Báo hiệu sắp hết giờ & hết giờ thông minh</span>
               </div>
