@@ -69,7 +69,7 @@ export default function AlarmSettings({
           </div>
 
           <p className="text-xs text-slate-500 dark:text-slate-400 pl-1 leading-relaxed">
-            Phát âm thanh báo hiệu khi thời gian còn lại chạm mốc quy định giúp chuẩn bị tinh thần trước.
+            Phát âm thanh báo hiệu khi thời gian còn lại sắp hết.
           </p>
 
           {config.warningEnabled ? (
@@ -157,7 +157,7 @@ export default function AlarmSettings({
           </div>
 
           <p className="text-xs text-slate-500 dark:text-slate-400 pl-1 leading-relaxed">
-            Phát chuông báo dồn dập khi thời gian đếm ngược chính thức kết thúc về 00:00:00.
+            Phát chuông báo khi thời gian đếm ngược chính thức kết thúc về 00:00:00.
           </p>
 
           <div className="flex flex-col gap-4 mt-2">

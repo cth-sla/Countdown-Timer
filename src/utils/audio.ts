@@ -17,23 +17,23 @@ function getAudioContext(): AudioContext {
 export const SOUND_PRESETS = [
   {
     id: 'marimba-chime',
-    name: 'Gõ Nhạc Gỗ Marimba',
-    description: 'Giai điệu mộc mạc, thư thái, thích hợp chuẩn bị hết giờ.',
+    name: 'Gõ Nhạc Marimba',
+  },
+  {
+    id: 'doorbell',
+    name: 'Chuông Cửa Ding Dong',
   },
   {
     id: 'soothing-bell',
     name: 'Chuông Đồng Ngân Vang',
-    description: 'Tiếng chuông gõ ấm áp, sâu lắng với dải âm ngân lâu.',
   },
   {
     id: 'airport-chime',
     name: 'Âm Thanh Sân Bay',
-    description: 'Âm báo phát thanh sân bay cổ điển, thanh lịch và trang trọng.',
   },
   {
     id: 'ticking-tension',
-    name: 'Tiếng Tích Tắc Hồi Hộp',
-    description: 'Âm thanh gõ gỗ đanh gọn giống kim giây gõ dồn dập.',
+    name: 'Tiếng Tích Tắc',
   },
 ];
 
@@ -250,6 +250,62 @@ export function playSound(soundId: string, volume: number, loop: boolean = false
         });
         break;
       }
+      case 'doorbell': {
+        // Classic "Ding Dong" doorbell chime
+        // "Ding" note (higher pitch, rich overtone)
+        const osc1 = ctx.createOscillator();
+        const overtone1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+        
+        overtone1.type = 'sine';
+        overtone1.frequency.setValueAtTime(1318.50, ctx.currentTime); // E6 (first harmonic for brightness)
+        
+        gain1.gain.setValueAtTime(0.65, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.8);
+        
+        osc1.connect(gain1);
+        overtone1.connect(gain1);
+        gain1.connect(mainGain);
+        
+        osc1.start();
+        overtone1.start();
+        osc1.stop(ctx.currentTime + 1.8);
+        overtone1.stop(ctx.currentTime + 1.8);
+        
+        activeSources.push(osc1, overtone1);
+
+        // "Dong" note (lower pitch, delayed by 380ms)
+        setTimeout(() => {
+          if (isStopped) return;
+          const osc2 = ctx.createOscillator();
+          const overtone2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          
+          overtone2.type = 'sine';
+          overtone2.frequency.setValueAtTime(1046.50, ctx.currentTime); // C6 (first harmonic for brightness)
+          
+          gain2.gain.setValueAtTime(0.65, ctx.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2);
+          
+          osc2.connect(gain2);
+          overtone2.connect(gain2);
+          gain2.connect(mainGain);
+          
+          osc2.start();
+          overtone2.start();
+          osc2.stop(ctx.currentTime + 2.2);
+          overtone2.stop(ctx.currentTime + 2.2);
+          
+          activeSources.push(osc2, overtone2);
+        }, 380);
+        break;
+      }
       case 'ticking-tension': {
         // sharp tension tick
         const osc = ctx.createOscillator();
@@ -284,6 +340,8 @@ export function playSound(soundId: string, volume: number, loop: boolean = false
       intervalTime = 1800;
     } else if (soundId === 'airport-chime') {
       intervalTime = 3000;
+    } else if (soundId === 'doorbell') {
+      intervalTime = 2800;
     }
     intervalId = setInterval(() => {
       triggerSound();
